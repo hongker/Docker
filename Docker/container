@@ -1,0 +1,24 @@
+1.什么是容器？
+  容器是从镜像创建的运行实例。
+
+2.创建容器
+  docker run -t -i -p port:port image command
+
+3.列出所有运行中容器
+  docker ps -a
+
+4.删除容器
+  docker rm containerId
+
+5.启动、停止和重启一个或多个指定容器
+  docker start|stop|restart
+
+6.导出容器
+  docker export containerId > container.tar
+
+7.导入容器快照为镜像
+  cat container.rar | docker import - ubuntu/apache:1
+
+8.给容器指定IP
+  docker run -i -t --rm --net='none' image /bin/bash
+  ./bind_addr.sh container ip

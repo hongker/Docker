@@ -1,0 +1,150 @@
+示例1：
+  使用Docker创建LNMP集群
+
+
+集群架构：
+-------------------------------------------------------------------
+  WEB服务器：
+    服务器1：Nginx+Php-fpm   172.17.18.1
+    服务器2：Nginx+Php-fpm   172.17.18.2
+
+  Mysql服务器：
+    主服务器： Mysql 172.17.18.3
+    从服务器： Mysql 172.17.18.4(暂不使用)
+
+  负载器：
+    Nginx：172.17.18.5
+
+-------------------------------------------------------------------
+
+操作命令：
+-------------------------------------------------------------------
+    docker pull ubuntu
+    创建镜像
+    Dockerfile
+      FROM ubuntu
+      MAINTAINER Docker Hongker<xiaok2013@live.com>
+      RUN apt-get update
+      RUN apt-get install nginx
+      RUN apt-get install php5-fpm
+      CMD service nginx start && service php5-fpm start
+
+    build新镜像
+    docker build -t ubuntu/nginx .
+
+  创建服务器容器
+    Web1:
+      docker run -t -i --rm --net='none' ubuntu/web /bin/bash
+      bind_addr containerId 172.17.18.1
+      service nginx start
+      service php5-fpm start
+
+    Web2:
+      docker run -t -i --rm --net='none' ubuntu/web /bin/bash
+      bind_addr containerId 172.17.18.2
+      service nginx start
+      service php5-fpm start
+
+    Mysql1:
+      docker run -t -i --rm --net='none' ubuntu/mysql /bin/bash
+      bind_addr containerId 172.17.18.3
+
+    Mysql2:
+      docker run -t -i --rm --net='none' ubuntu/mysql /bin/bash
+      bind_addr containerId 172.17.18.4
+
+    Load_Balance:
+      docker run -t -i --rm --net='none' ubuntu/nginx:load_balance /bin/bash
+      bind_addr containerId 172.17.18.5
+
+      配置：
+      upstream 172.17.18.5 {
+              server 172.17.18.1 weight=2;
+              server 172.17.18.2 weight=1;
+      }
+      server {
+              listen 80;
+              server_name 172.17.18.5;
+              location / {
+                      root html;
+                      index index.html index.htm;
+                      proxy_pass http://172.17.18.5;
+              }
+      }
+      service nginx start
+
+
+    创建数据库
+      create database blog charset=utf8;
+      use blog;
+      create table users (
+        id int not null primary key auto_increment,
+        username varchar(30) not null,
+        email varchar(30) not null unique key,
+        is_delete tinyint not null default 0,
+        created_at timestamp not null default current_timestamp,
+        updated_at timestamp not null default '0000-00-00 00:00:00'
+      )Engine=myisam default charset=utf8;
+      insert into users(username,email) values('hongker','774601526@qq.com');
+
+      配置mysql服务器可远程访问
+        GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'hongker' WITH GRANT OPTION;
+        flush privileges;
+        vi /etc/mysql/my.cnf
+          注释掉 bind-address=127.0.0.1
+
+      在web1服务器：
+        vi /usr/share/nginx/www/index.php
+          <?php
+          echo 'THis is site one<br>';
+
+          $dsn = "mysql:host=172.17.18.3;dbname=blog;charset=utf8";
+
+          $pdo= new PDO($dsn,'root','hongker');
+
+          $sql = "select * from users";
+          $resource = $pdo->query($sql);
+
+          $result = $resource->fetchAll();
+
+          echo 'Data from Mysql:<br>';
+          echo 'username:'.$result[0]['username'];
+
+      访问172.17.18.5。
+-------------------------------------------------------------------
+
+附录：
+-------------------------------------------------------------------
+1.bind_addr.sh
+
+
+#!/bin/sh
+if [ -e $(dirname "$0")/nsenter ]; then
+  # with boot2docker, nsenter is not in the PATH but it is in the same folder
+  NSENTER=$(dirname "$0")/nsenter
+else
+  NSENTER=nsenter
+fi
+if [ -z "$1" ]; then
+  echo "Usage: `basename "$0"` CONTAINER [COMMAND [ARG]...]"
+  echo ""
+  echo "Enters the Docker CONTAINER and executes the specified COMMAND."
+  echo "If COMMAND is not specified, runs an interactive shell in CONTAINER."
+else
+  PID=$(docker inspect --format "{{.State.Pid}}" "$1")
+  if [ -z "$PID" ]; then
+    exit 1
+  fi
+  shift
+  OPTS="--target $PID --mount --uts --ipc --net --pid --"
+  if [ -z "$1" ]; then
+    # No command given.
+    # Use su to clear all host environment variables except for TERM,
+    # initialize the environment variables HOME, SHELL, USER, LOGNAME, PATH,
+    # and start a login shell.
+    "$NSENTER" $OPTS su - root
+  else
+    # Use env to clear all host environment variables.
+    "$NSENTER" $OPTS env --ignore-environment -- "$@"
+  fi
+fi

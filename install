@@ -1,0 +1,5 @@
+ubuntu 安装docker
+
+  sudo add-apt-repository ppa:dotcloud/lxc-docker
+  sudo update
+  sudo install lxc-docker
