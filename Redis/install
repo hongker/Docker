@@ -1,0 +1,84 @@
+#安装Redis集群
+
+1.获取基础镜像
+  docker pull phusion/baseimage
+
+2.运行容器
+  docker run -ti --name redis phusion/baseimage /sbin/my_init
+
+3.安装Redis
+  apt-get update
+  apt-get upgrade
+  apt-get install wget  gcc make
+
+  wget https://github.com/antirez/redis/archive/3.0.0-rc1.tar.gz
+
+  tar zxvf 3.0.0-rc1.tar.gz
+  cd redis-3.0.0-rc1/
+  make
+  (如果出错，请先逐步拍错，如有疑问，可以发邮件给我..774601526@qq.com)
+
+  cd src
+  cp redis-cli redis-server redis-sentinel /usr/bin/
+  mkdir -p /etc/redis/
+  cd ..
+  cp redis.conf /etc/redis/redis.conf
+
+4.启动Redis服务
+  redis-server /etc/redis/redis.conf &
+  (此时,redis已经成功启动)
+
+5.配置自动启动Redis
+  cd /etc/service
+  mkdir redis
+  cd redis
+  vim run
+
+    #!/bin/sh
+    set -e
+    exec /usr/bin/redis-server /etc/redis/redis.conf
+
+  chmod a+x run
+
+6.保存镜像
+  docker commit redis redis-cluster-node
+
+7.启动容器节点
+  docker run -d --name node1 -p 5001:6379 redis-cluster-node /sbin/my_init
+  docker run -d --name node2 -p 5002:6379 redis-cluster-node /sbin/my_init
+  docker run -d --name node3 -p 5003:6379 redis-cluster-node /sbin/my_init
+  分别使用本地的5001,5002,5003映射redis节点服务器
+
+  连接服务：
+    redis-cli -h 本机IP -p 5001
+
+8.配置主从
+  查看IP地址：
+  docker inspect node1 |grep IPAddress
+
+  node1 : 172.17.0.9
+  node2 : 172.17.0.11
+  node3 : 172.17.0.12
+
+  进入node2
+  sudo docker-enter node2
+  vim /etc/redis/redis.conf
+  添加一行，指定node1为node2的从服务器
+  slaveof 172.17.0.9 6379
+
+  重启node2
+  docker restart node2
+  此时，node2就是node1的从服务器了
+
+9.测试
+  访问node2的redis：
+    redis-cli -h 本机IP -p 5001
+
+    set username hongker
+
+  退出再访问node2的redis
+    redis-cli -h 本机IP -p 5002
+    get username
+
+
+  Over...thanks...
