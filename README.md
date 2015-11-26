@@ -67,7 +67,7 @@
 2.[安装Shipyard管理容器](https://github.com/hongker/Docker/blob/master/Shipyard)    
 3.[使用Docker安装Redis集群](https://github.com/hongker/Docker/blob/master/Redis)   
 4.[使用Swarm管理Docker集群](https://github.com/hongker/Docker/blob/master/Swarm)       
-
+5.[搭建本地Registry(仓库)](https://github.com/hongker/Docker/blob/master/Registry)
 ##Todo
 1.[使用Docker搭建即时通讯服务](#)    
 2.[使用Docker搭建WebService服务](#)    
