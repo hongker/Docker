@@ -65,7 +65,8 @@
 ##Docker示例
 1.[使用Docker搭建Web集群服务](https://github.com/hongker/Docker/blob/master/Cluster)   
 2.[安装Shipyard管理容器](https://github.com/hongker/Docker/blob/master/Shipyard)    
-3.[使用Docker安装Redis集群](https://github.com/hongker/Docker/blob/master/Redis)       
+3.[使用Docker安装Redis集群](https://github.com/hongker/Docker/blob/master/Redis)   
+4.[使用Swarm管理Docker集群](https://github.com/hongker/Docker/blob/master/Swarm)       
 
 ##Todo
 1.[使用Docker搭建即时通讯服务](#)    
