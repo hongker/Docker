@@ -185,7 +185,7 @@
   ```
 
   (3)最终结果:
-  Nginx : Requests per second:    7158.25 [#/sec] (mean) ＜/br＞
-  Apache : Requests per second:    4682.75 [#/sec] (mean) ＜/br＞ 
-
+  Nginx : Requests per second:    7158.25 [#/sec] (mean) <br />
+  Apache : Requests per second:    4682.75 [#/sec] (mean) <br />
+  <br />
   PS : 果然Nginx并发更强一点啊...
