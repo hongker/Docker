@@ -183,9 +183,9 @@
   100%     39 (longest request)
 
   ```
-  
+
   (3)最终结果:
-  Nginx : Requests per second:    7158.25 [#/sec] (mean)
-  Apache : Requests per second:    4682.75 [#/sec] (mean)
+  Nginx : Requests per second:    7158.25 [#/sec] (mean) ＜/br＞
+  Apache : Requests per second:    4682.75 [#/sec] (mean) ＜/br＞ 
 
   PS : 果然Nginx并发更强一点啊...
